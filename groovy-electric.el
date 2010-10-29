@@ -67,13 +67,13 @@
   "*List of contexts where matching delimiter should be inserted.
 The word 'all' will do all insertions."
   :type '(set :extra-offset 8
-	      (const :tag "Everything" all )
-	      (const :tag "Curly brace" ?\{ )
-	      (const :tag "Square brace" ?\[ )
-	      (const :tag "Round brace" ?\( )
-	      (const :tag "Quote" ?\' )
-	      (const :tag "Double quote" ?\" )
-	      (const :tag "Dollar in GStrings" ?\$ ))
+              (const :tag "Everything" all )
+              (const :tag "Curly brace" ?\{ )
+              (const :tag "Square brace" ?\[ )
+              (const :tag "Round brace" ?\( )
+              (const :tag "Quote" ?\' )
+              (const :tag "Double quote" ?\" )
+              (const :tag "Dollar in GStrings" ?\$ ))
   :group 'groovy-electric)
 
 (defcustom groovy-electric-newline-before-closing-bracket nil
@@ -108,14 +108,13 @@ have Font Lock enabled. ${ } is expanded when in a GString"
   (define-key groovy-mode-map "}" 'groovy-electric-matching-char)
   (define-key groovy-mode-map "\"" 'groovy-electric-matching-char)
   (define-key groovy-mode-map "\'" 'groovy-electric-matching-char)
-  (define-key groovy-mode-map "\$" 'groovy-electric-pound)
-  )
+  (define-key groovy-mode-map "\$" 'groovy-electric-pound))
 
 (defun groovy-electric-code-at-point-p()
   (and groovy-electric-mode
        (let* ((properties (text-properties-at (point))))
-		 (and (null (memq 'font-lock-string-face properties))
-			  (null (memq 'font-lock-comment-face properties))))))
+         (and (null (memq 'font-lock-string-face properties))
+              (null (memq 'font-lock-comment-face properties))))))
 
 (defun groovy-electric-string-at-point-p()
   (and groovy-electric-mode
@@ -125,12 +124,15 @@ have Font Lock enabled. ${ } is expanded when in a GString"
 (defun groovy-electric-gstring-at-point-p()
   (and groovy-electric-mode
        (consp (memq 'font-lock-string-face (text-properties-at (point))))
-	   (save-excursion
-		 (char-equal ?\" (char-after (car (c-literal-limits)))))))
+       (save-excursion
+         (char-equal ?\" (char-after (car (c-literal-limits)))))))
 
 (defun groovy-electric-next-char-is-p (arg)
-  (let ((next-char (buffer-substring (point) (+ 1 (point)))))
-    (equal (char-to-string arg) next-char)))
+  (if (> (buffer-size) (point))
+      (let ((next-char (buffer-substring (point)
+                                         (+ 1 (point)))))
+        (equal (char-to-string arg) next-char))
+    nil))
 
 (defun groovy-electric-is-last-command-char-expandable-punct-p()
   (or (memq 'all groovy-electric-expand-delimiters-list)
@@ -140,12 +142,12 @@ have Font Lock enabled. ${ } is expanded when in a GString"
   (interactive "P")
   (self-insert-command (prefix-numeric-value arg))
   (when (and (groovy-electric-is-last-command-char-expandable-punct-p)
-			 (groovy-electric-code-at-point-p))
-	(insert " ")
-	(save-excursion
-	  (if groovy-electric-newline-before-closing-bracket
-		  (newline))
-	  (insert "}"))))
+             (groovy-electric-code-at-point-p))
+    (insert " ")
+    (save-excursion
+      (if groovy-electric-newline-before-closing-bracket
+          (newline))
+      (insert "}"))))
 
 (defun groovy-electric-matching-char(arg)
   (interactive "P")
@@ -162,12 +164,12 @@ have Font Lock enabled. ${ } is expanded when in a GString"
   (interactive "P")
   (self-insert-command (prefix-numeric-value arg))
   (when (and (groovy-electric-is-last-command-char-expandable-punct-p)
-			 (groovy-electric-gstring-at-point-p)
-			 (not (save-excursion ; make sure it is not escaped
-					(backward-char 1)
-					(char-equal ?\\ (preceding-char)))))
-	(insert "{}")
-	(backward-char 1)))
+             (groovy-electric-gstring-at-point-p)
+             (not (save-excursion ; make sure it is not escaped
+                    (backward-char 1)
+                    (char-equal ?\\ (preceding-char)))))
+    (insert "{}")
+    (backward-char 1)))
 
 
 (provide 'groovy-electric)
